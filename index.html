@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F SPEED - SAMSUNG SENSITIVITY ENGINE</title>
+    <style>
+        /* ==========================================================================
+           1. SYSTEM CORE & NEO-CYBERPUNK THEME
+           ========================================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0; padding: 0;
+            font-family: 'Impact', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none; -webkit-user-select: none;
+        }
+
+        body {
+            background: #06020b;
+            background-image: linear-gradient(180deg, #120310 0%, #06020b 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            overflow-x: hidden; padding: 20px;
+        }
+
+        /* ==========================================================================
+           2. LOADING SCREEN
+           ========================================================================== */
+        #loading-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #06020b; z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .loader-logo {
+            font-size: 4rem; color: #ff0044;
+            text-shadow: 0 0 20px #ff0044, 0 0 40px #ffcc00;
+            font-style: italic; letter-spacing: 5px; margin-bottom: 10px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .loader-bar-bg {
+            width: 250px; height: 6px; background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px; overflow: hidden; border: 1px solid rgba(255, 0, 68, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .loader-bar-fill {
+            width: 0%; height: 100%;
+            background: linear-gradient(90deg, #ff0044, #ffcc00);
+            transition: width 0.1s linear;
+        }
+
+        .enter-btn {
+            background: transparent; border: 2px solid #ff0044; color: #ffffff;
+            padding: 12px 45px; font-size: 1.2rem; font-weight: bold; cursor: pointer;
+            border-radius: 4px; text-transform: uppercase; letter-spacing: 3px;
+            display: none; box-shadow: 0 0 15px rgba(255, 0, 68, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .enter-btn:hover {
+            background: #ff0044; color: #000000;
+            box-shadow: 0 0 25px #ff0044, 0 0 10px #ffcc00; border-color: #ffcc00;
+        }
+
+        /* ==========================================================================
+           3. MAIN PANEL
+           ========================================================================== */
+        .wrapper {
+            width: 100%; max-width: 600px;
+            opacity: 0; transform: scale(0.95);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .wrapper.active { opacity: 1; transform: scale(1); }
+
+        .header-box { text-align: center; margin-bottom: 20px; }
+        .main-title { font-size: 3.5rem; color: #ff0044; text-shadow: 0 0 15px #ff0044; font-style: italic; letter-spacing: 2px; }
+        .studio-tag { font-family: 'Segoe UI', sans-serif; font-size: 0.75rem; color: #ffcc00; letter-spacing: 6px; font-weight: bold; text-transform: uppercase; }
+
+        .engine-panel {
+            background: rgba(18, 7, 24, 0.8); border: 2px solid #ff0044;
+            border-radius: 12px; padding: 25px;
+            box-shadow: 0 0 30px rgba(255, 0, 68, 0.2); backdrop-filter: blur(8px);
+        }
+
+        /* TOP INFO TAGS */
+        .sys-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .sys-card { background: rgba(255, 0, 68, 0.05); border: 1px solid rgba(255, 0, 68, 0.2); border-radius: 6px; padding: 10px; text-align: center; }
+        .sys-label { font-family: 'Segoe UI', sans-serif; font-size: 0.75rem; color: #8e809c; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+        .sys-value { font-size: 1.05rem; color: #ffffff; font-weight: bold; letter-spacing: 1px; }
+        .sys-card.highlight .sys-value { color: #ffcc00; text-shadow: 0 0 5px rgba(255, 204, 0, 0.3); }
+
+        /* SEARCH CONTAINER IMPROVED */
+        .search-container { position: relative; margin-bottom: 20px; }
+        .search-container label { font-family: 'Segoe UI', sans-serif; font-size: 0.8rem; color: #ffcc00; font-weight: bold; display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .search-input-wrapper { position: relative; display: flex; align-items: center; }
+        
+        .search-input {
+            width: 100%; background: #0d0411; border: 2px solid #ff0044; color: #ffffff;
+            padding: 14px 45px 14px 14px; font-size: 1rem; border-radius: 6px; outline: none;
+            font-family: 'Segoe UI', sans-serif; font-weight: bold; letter-spacing: 1px;
+            box-shadow: inset 0 0 10px rgba(255, 0, 68, 0.2); transition: all 0.3s;
+        }
+        .search-input:focus { border-color: #ffcc00; box-shadow: 0 0 15px rgba(255, 204, 0, 0.4); }
+
+        /* Nút kích hoạt menu góc phải */
+        .search-trigger-btn {
+            position: absolute; right: 0; top: 0; bottom: 0; width: 45px;
+            display: flex; justify-content: center; align-items: center;
+            color: #ff0044; cursor: pointer; transition: all 0.3s;
+            border-left: 1px solid rgba(255, 0, 68, 0.3);
+        }
+        .search-trigger-btn:hover { color: #ffcc00; background: rgba(255,0,68,0.1); border-radius: 0 6px 6px 0; }
+
+        /* DROP LIST SIÊU ĐẸP */
+        .drop-panel {
+            position: absolute; top: 100%; left: 0; width: 100%;
+            background: #0d0411; border: 2px solid #ff0044; border-top: none;
+            border-radius: 0 0 8px 8px; max-height: 250px; overflow-y: auto;
+            z-index: 100; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+            margin-top: 2px;
+        }
+
+        .drop-panel::-webkit-scrollbar { width: 6px; }
+        .drop-panel::-webkit-scrollbar-thumb { background: #ff0044; border-radius: 3px; }
+
+        .drop-item {
+            font-family: 'Segoe UI', sans-serif; font-weight: bold; font-size: 0.95rem;
+            padding: 12px 15px; color: #ffffff; cursor: pointer;
+            border-bottom: 1px solid rgba(255, 0, 68, 0.1); display: flex; align-items: center; justify-content: space-between;
+            transition: all 0.2s;
+        }
+        .drop-item:hover { background: rgba(255, 0, 68, 0.2); color: #ffcc00; padding-left: 20px; }
+        
+        .badge-brand { background: #ff0044; color: black; font-size: 0.65rem; padding: 2px 6px; font-family: 'Impact'; border-radius: 3px; letter-spacing: 1px; }
+        .badge-device { border: 1px solid #ffcc00; color: #ffcc00; font-size: 0.65rem; padding: 2px 6px; font-family: 'Segoe UI'; border-radius: 3px; }
+
+        .back-item { background: rgba(255, 204, 0, 0.05); color: #ffcc00; border-bottom: 2px dashed #ffcc00; font-style: italic; }
+        .back-item:hover { background: rgba(255, 204, 0, 0.15); padding-left: 15px; }
+
+        /* OUTPUT PANEL */
+        .sens-container { background: rgba(0, 0, 0, 0.5); border-radius: 8px; padding: 10px 20px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.03); }
+        .sens-row { font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid rgba(255, 0, 68, 0.1); }
+        .sens-txt-label { font-weight: 600; color: #c9bed6; font-size: 0.9rem; }
+        .sens-num { color: #ffcc00; font-weight: 900; font-size: 1.25rem; text-shadow: 0 0 5px rgba(255, 204, 0, 0.4); }
+        .dpi-box { border-top: 2px dashed rgba(255, 0, 68, 0.3); margin-top: 5px; padding-top: 12px; }
+
+        .action-btn {
+            width: 100%; background: linear-gradient(135deg, #ff0044 0%, #b30030 100%);
+            color: white; border: none; padding: 14px; font-size: 1rem; font-weight: bold;
+            border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 0, 68, 0.4); transition: all 0.2s; margin-bottom: 12px;
+        }
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px #ff0044; }
+
+        .discord-btn {
+            width: 100%; background: #1a1423; border: 1px solid #5865F2; color: #5865F2;
+            padding: 12px; font-size: 0.9rem; font-weight: bold; border-radius: 6px;
+            cursor: pointer; text-transform: uppercase; display: flex; justify-content: center; align-items: center; gap: 8px;
+            text-decoration: none; transition: all 0.3s;
+        }
+        .discord-btn:hover { background: #5865F2; color: #ffffff; box-shadow: 0 0 15px #5865F2; }
+
+        /* MUSIC STATUS INDICATOR */
+        .music-indicator {
+            position: fixed; bottom: 20px; left: 20px; display: flex; align-items: center; gap: 8px;
+            background: rgba(0,0,0,0.6); padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,0,68,0.2); font-size: 0.75rem; color: #ff0044;
+        }
+        .bar { width: 3px; height: 12px; background: #ff0044; animation: dance 1s linear infinite alternate; }
+        .bar:nth-child(2) { animation-delay: 0.3s; }
+        .bar:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes dance { 0% { height: 3px; } 100% { height: 15px; } }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.03); opacity: 1; text-shadow: 0 0 30px #ff0044; } 100% { transform: scale(1); opacity: 0.9; } }
+        .footer-text { text-align: center; font-family: 'Segoe UI', sans-serif; font-size: 0.7rem; color: #4a3e5c; margin-top: 20px; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-audio" src="lofi-music.mp3" loop></audio>
+
+    <div id="loading-screen">
+        <div class="loader-logo">F SPEED</div>
+        <div style="font-family:'Segoe UI'; font-size:0.8rem; color:#ffcc00; letter-spacing:3px; margin-bottom:15px; font-weight:bold;">TỐI ƯU HÓA HỆ THỐNG ĐIỀU KHIỂN...</div>
+        <div class="loader-bar-bg">
+            <div class="loader-bar-fill" id="progress-fill"></div>
+        </div>
+        <div style="font-family:'Segoe UI'; font-size:0.9rem; color:#625275;" id="load-txt">0%</div>
+        <button class="enter-btn" id="btn-start" onclick="activateEngine()">VÀO WEB</button>
+    </div>
+
+    <div class="wrapper" id="main-ui">
+        <div class="header-box">
+            <div class="main-title">F SPEED</div>
+            <div class="studio-tag">TUNED BY AST STUDIO</div>
+        </div>
+
+        <div class="engine-panel">
+            
+            <div class="sys-info-grid">
+                <div class="sys-card">
+                    <div class="sys-label">Hỗ trợ hãng</div>
+                    <div class="sys-value" id="current-brand-tag">CHƯA CHỌN</div>
+                </div>
+                <div class="sys-card highlight">
+                    <div class="sys-label">Hỗ trợ phiên bản</div>
+                    <div class="sys-value">ANDROID 14 - 16</div>
+                </div>
+            </div>
+
+            <div class="search-container">
+                <label>🌐 LỰA CHỌN THIẾT BỊ HỆ THỐNG:</label>
+                <div class="search-input-wrapper">
+                    <input type="text" id="main-search" class="search-input" placeholder="Bấm vào để chọn hãng hoặc gõ tìm máy..." autocomplete="off">
+                    <div class="search-trigger-btn" id="menu-trigger" title="Mở danh sách">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <div class="drop-panel" id="drop-list"></div>
+            </div>
+
+            <div class="sens-container">
+                <div class="sens-row">
+                    <span class="sens-txt-label">Nhìn Xung Quanh (General)</span>
+                    <span class="sens-num" id="out-general">--</span>
+                </div>
+                <div class="sens-row">
+                    <span class="sens-txt-label">Red Dot Sight</span>
+                    <span class="sens-num" id="out-reddot">--</span>
+                </div>
+                <div class="sens-row">
+                    <span class="sens-txt-label">Ống Ngắm 2x (2x Scope)</span>
+                    <span class="sens-num" id="out-2x">--</span>
+                </div>
+                <div class="sens-row">
+                    <span class="sens-txt-label">Ống Ngắm 4x (4x Scope)</span>
+                    <span class="sens-num" id="out-4x">--</span>
+                </div>
+                <div class="sens-row">
+                    <span class="sens-txt-label">Ống Ngắm AWM (AWM Scope)</span>
+                    <span class="sens-num" id="out-awm">--</span>
+                </div>
+                <div class="sens-row">
+                    <span class="sens-txt-label">Nhìn Tự Do (Free Look)</span>
+                    <span class="sens-num" id="out-look">--</span>
+                </div>
+                <div class="sens-row dpi-box" style="border-bottom:none; padding-bottom:0;">
+                    <span class="sens-txt-label" style="color: #ffcc00; font-weight:bold;">THIẾT LẬP DPI & NÚT BẮN:</span>
+                    <span class="sens-num" id="out-dpi" style="font-size:0.9rem; color:#00ffcc;">Vui lòng chọn máy...</span>
+                </div>
+            </div>
+
+            <button class="action-btn" onclick="copyEngineSens()">📋 SAO CHÉP THÔNG SỐ CHỌN</button>
+
+            <a href="https://discord.gg/aststudio" target="_blank" class="discord-btn">
+                📢 JOIN AST STUDIO DISCORD SERVER
+            </a>
+        </div>
+
+        <div class="footer-text">
+            F SPEED ENGINE SYSTEM V8.0 // POWERED BY AST STUDIO.
+        </div>
+    </div>
+
+    <div class="music-indicator" id="music-bar" style="display:none;">
+        <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        <span>AUDIO LIVE</span>
+    </div>
+
+    <script>
+        // --- DATABASE TOÀN BỘ DÒNG SAMSUNG ---
+        const fSpeedDatabase = {
+            "SAMSUNG": {
+                "Galaxy A05 / A05s": { g: 100, r: 98, x2: 95, x4: 92, a: 50, l: 70, dpi: "Nút: 42% | DPI: 530 (Tăng tốc vuốt)" },
+                "Galaxy A14 / A14 5G": { g: 100, r: 96, x2: 94, x4: 90, a: 48, l: 65, dpi: "Nút: 44% | DPI: 520" },
+                "Galaxy A15 / A15 5G": { g: 100, r: 96, x2: 92, x4: 88, a: 45, l: 65, dpi: "Nút: 44% | DPI: 510 (Mượt sâu cảm ứng)" },
+                "Galaxy A16 / A16 5G": { g: 99, r: 95, x2: 92, x4: 89, a: 43, l: 62, dpi: "Nút: 45% | DPI: 500 (Bản Android 16)" },
+                "Galaxy A24 / A25 5G": { g: 98, r: 94, x2: 90, x4: 86, a: 45, l: 60, dpi: "Nút: 46% | DPI: 495" },
+                "Galaxy A34 / A35 5G": { g: 96, r: 92, x2: 89, x4: 85, a: 40, l: 60, dpi: "Nút: 46% | DPI: 490 (Màn 120Hz)" },
+                "Galaxy A54 / A55 5G": { g: 95, r: 91, x2: 88, x4: 84, a: 42, l: 58, dpi: "Nút: 47% | DPI: 480" },
+                "Galaxy A73 5G": { g: 94, r: 91, x2: 87, x4: 83, a: 40, l: 55, dpi: "Nút: 48% | DPI: 475" },
+                "Galaxy M14 / M15 5G": { g: 100, r: 97, x2: 93, x4: 89, a: 46, l: 66, dpi: "Nút: 43% | DPI: 525" },
+                "Galaxy M34 / M35 5G": { g: 97, r: 93, x2: 90, x4: 86, a: 44, l: 62, dpi: "Nút: 45% | DPI: 500" },
+                "Galaxy M54 / M55 5G": { g: 95, r: 92, x2: 88, x4: 85, a: 42, l: 58, dpi: "Nút: 47% | DPI: 485" },
+                "Galaxy S21 / S21+ / S21 Ultra": { g: 94, r: 91, x2: 88, x4: 84, a: 40, l: 55, dpi: "Nút: 47% | DPI: 470" },
+                "Galaxy S21 FE / S23 FE": { g: 95, r: 92, x2: 89, x4: 85, a: 42, l: 56, dpi: "Nút: 46% | DPI: 480" },
+                "Galaxy S22 / S22+ 5G": { g: 93, r: 90, x2: 86, x4: 82, a: 38, l: 54, dpi: "Nút: 48% | DPI: 465" },
+                "Galaxy S23 / S23+ 5G": { g: 94, r: 90, x2: 86, x4: 82, a: 40, l: 55, dpi: "Nút: 47% | DPI: 470" },
+                "Galaxy S24 / S24+ 5G": { g: 92, r: 89, x2: 85, x4: 81, a: 36, l: 52, dpi: "Nút: 48% | DPI: 460" },
+                "Galaxy S25 / S25+ 5G": { g: 91, r: 88, x2: 84, x4: 80, a: 35, l: 50, dpi: "Nút: 48% | DPI: 455" },
+                "Galaxy S22 Ultra 5G": { g: 92, r: 89, x2: 85, x4: 82, a: 40, l: 50, dpi: "Nút: 46% | DPI: 460" },
+                "Galaxy S23 Ultra 5G": { g: 91, r: 88, x2: 85, x4: 81, a: 36, l: 52, dpi: "Nút: 45% | DPI: 460" },
+                "Galaxy S24 Ultra 5G": { g: 90, r: 87, x2: 84, x4: 80, a: 35, l: 50, dpi: "Nút: 45% | DPI: 450 (Chống sượng tâm)" },
+                "Galaxy S25 Ultra 5G": { g: 89, r: 86, x2: 83, x4: 79, a: 32, l: 48, dpi: "Nút: 44% | DPI: 445" },
+                "Galaxy Z Fold / Z Flip Series": { g: 88, r: 85, x2: 80, x4: 78, a: 30, l: 45, dpi: "Nút: 50% | DPI: Mặc định" },
+                "Galaxy Tab S8 / S9 Series": { g: 82, r: 78, x2: 75, x4: 70, a: 25, l: 40, dpi: "Nút: 55% | DPI: Mặc định" }
+            }
+        };
+
+        let currentLevel = "brand";
+        let selectedBrand = "";
+        let selectedDeviceName = "";
+
+        const searchInput = document.getElementById('main-search');
+        const dropList = document.getElementById('drop-list');
+        const brandTag = document.getElementById('current-brand-tag');
+        const triggerBtn = document.getElementById('menu-trigger');
+
+        // LOADING ENGINE CONTROL
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.floor(Math.random() * 9) + 3;
+            if (progress >= 100) {
+                progress = 100; clearInterval(interval);
+                document.getElementById('load-txt').style.display = 'none';
+                document.getElementById('btn-start').style.display = 'block'; 
+            }
+            document.getElementById('progress-fill').style.width = progress + '%';
+            document.getElementById('load-txt').innerText = progress + '%';
+        }, 25);
+
+        function activateEngine() {
+            document.getElementById('loading-screen').style.opacity = '0';
+            setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
+            document.getElementById('main-ui').classList.add('active');
+            
+            const audio = document.getElementById('bg-audio');
+            audio.play().catch(e => console.log("Engine online."));
+            document.getElementById('music-bar').style.display = 'flex';
+            
+            renderMenu();
+        }
+
+        // BIÊN SOẠN BẢN MENU HOÀN TOÀN MỚI - KHÔNG TỰ ĐỘNG ẨN BẬY
+        function renderMenu(filterKeyword = "") {
+            dropList.innerHTML = "";
+            const kw = filterKeyword.toLowerCase().trim();
+
+            // KHI GÕ TỪ KHÓA TÌM KIẾM THẲNG (Không quan tâm đang ở cấp độ nào)
+            if (kw !== "") {
+                let foundAny = false;
+                for (const b in fSpeedDatabase) {
+                    for (const dev in fSpeedDatabase[b]) {
+                        if (dev.toLowerCase().includes(kw)) {
+                            const item = document.createElement('div');
+                            item.className = "drop-item";
+                            item.innerHTML = `<span>${dev}</span> <span class="badge-device">${b}</span>`;
+                            item.onclick = (e) => {
+                                e.stopPropagation(); // Chống lỗi bong bóng sự kiện
+                                selectFinalDevice(b, dev);
+                                dropList.style.display = 'none';
+                            };
+                            dropList.appendChild(item);
+                            foundAny = true;
+                        }
+                    }
+                }
+                if(!foundAny) {
+                    dropList.innerHTML = `<div class="drop-item" style="color:#625275; cursor:default;">Không tìm thấy máy trùng khớp...</div>`;
+                }
+                return;
+            }
+
+            // CẤP ĐỘ 1: CHỌN HÃNG (Khi ô tìm kiếm trống)
+            if (currentLevel === "brand") {
+                for (const brand in fSpeedDatabase) {
+                    const item = document.createElement('div');
+                    item.className = "drop-item";
+                    item.innerHTML = `<span>${brand}</span> <span class="badge-brand">HÃNG MÁY</span>`;
+                    item.onclick = (e) => {
+                        e.stopPropagation();
+                        selectedBrand = brand;
+                        brandTag.innerText = brand;
+                        currentLevel = "device";
+                        searchInput.value = "";
+                        searchInput.placeholder = `Chọn dòng máy của ${brand}...`;
+                        renderMenu();
+                    };
+                    dropList.appendChild(item);
+                }
+            } 
+            // CẤP ĐỘ 2: CHỌN MÁY THUỘC HÃNG ĐÃ CHỌN (Khi ô tìm kiếm trống)
+            else if (currentLevel === "device") {
+                const backItem = document.createElement('div');
+                backItem.className = "drop-item back-item";
+                backItem.innerHTML = `<span>⬅ QUAY LẠI CHỌN HÃNG KHÁC</span>`;
+                backItem.onclick = (e) => {
+                    e.stopPropagation();
+                    currentLevel = "brand";
+                    selectedBrand = "";
+                    brandTag.innerText = "CHƯA CHỌN";
+                    searchInput.value = "";
+                    searchInput.placeholder = "Bấm vào để chọn hãng hoặc gõ tìm máy...";
+                    renderMenu();
+                };
+                dropList.appendChild(backItem);
+
+                const devices = fSpeedDatabase[selectedBrand];
+                for (const devName in devices) {
+                    const item = document.createElement('div');
+                    item.className = "drop-item";
+                    item.innerHTML = `<span>${devName}</span> <span class="badge-device">ONLINE</span>`;
+                    item.onclick = (e) => {
+                        e.stopPropagation();
+                        selectFinalDevice(selectedBrand, devName);
+                        dropList.style.display = 'none';
+                    };
+                    dropList.appendChild(item);
+                }
+            }
+        }
+
+        function selectFinalDevice(brand, deviceName) {
+            selectedBrand = brand;
+            selectedDeviceName = deviceName;
+            brandTag.innerText = brand;
+            searchInput.value = deviceName;
+
+            const config = fSpeedDatabase[brand][deviceName];
+            if (config) {
+                document.getElementById('out-general').innerText = config.g;
+                document.getElementById('out-reddot').innerText = config.r;
+                document.getElementById('out-2x').innerText = config.x2;
+                document.getElementById('out-4x').innerText = config.x4;
+                document.getElementById('out-awm').innerText = config.a;
+                document.getElementById('out-look').innerText = config.l;
+                document.getElementById('out-dpi').innerText = config.dpi;
+            }
+        }
+
+        // SỰ KIỆN ĐIỀU KHIỂN ĐÓNG MỞ (CHẮC CHẮN VÀ MƯỢT MÀ)
+        searchInput.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropList.style.display = 'block';
+            renderMenu(searchInput.value);
+        });
+
+        triggerBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isShowing = dropList.style.display === 'block';
+            dropList.style.display = isShowing ? 'none' : 'block';
+            if(!isShowing) renderMenu(searchInput.value);
+        });
+
+        searchInput.addEventListener('input', () => {
+            dropList.style.display = 'block';
+            renderMenu(searchInput.value);
+        });
+        
+        // Chỉ đóng menu khi click thực sự ra ngoài vùng tìm kiếm
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                dropList.style.display = 'none';
+            }
+        });
+
+        function copyEngineSens() {
+            if(!selectedDeviceName) { alert("Vui lòng lựa chọn máy trước!"); return; }
+            const rawText = `🚀 F SPEED ENGINE REPORT:\n----------------------------------\nHãng máy: ${selectedBrand}\nThiết bị: ${selectedDeviceName.toUpperCase()}\nHỗ trợ OS: Android 14 - 16\n----------------------------------\n- Nhìn xung quanh: ${document.getElementById('out-general').innerText}\n- Red Dot Sight: ${document.getElementById('out-reddot').innerText}\n- Ống ngắm 2x: ${document.getElementById('out-2x').innerText}\n- Ống ngắm 4x: ${document.getElementById('out-4x').innerText}\n- Ống ngắm AWM: ${document.getElementById('out-awm').innerText}\n- Nhìn tự do: ${document.getElementById('out-look').innerText}\n👉 Chỉ số: ${document.getElementById('out-dpi').innerText}\n----------------------------------\n🔥 POWERED BY AST STUDIO`;
+            navigator.clipboard.writeText(rawText).then(() => alert("Đã sao chép cấu hình F SPEED!")).catch(() => alert("Lỗi trích xuất."));
+        }
+
+        document.addEventListener('contextmenu', event => event.preventDefault());
+    </script>
+</body>
+</html>
+
