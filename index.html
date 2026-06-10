@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F SPEED - SAMSUNG SENSITIVITY ENGINE</title>
+    <style>
+        /* ==========================================================================
+           1. CORE SYSTEM & THEME CYBER RUSH
+           ========================================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Impact', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background: #06020b;
+            background-image: linear-gradient(180deg, #120310 0%, #06020b 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        /* ==========================================================================
+           2. LOADING SCREEN
+           ========================================================================== */
+        #loading-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #06020b;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .loader-logo {
+            font-size: 4rem;
+            color: #ff0044;
+            text-shadow: 0 0 20px #ff0044, 0 0 40px #ffcc00;
+            font-style: italic;
+            letter-spacing: 5px;
+            margin-bottom: 10px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .loader-bar-bg {
+            width: 250px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 0, 68, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .loader-bar-fill {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff0044, #ffcc00);
+            transition: width 0.1s linear;
+        }
+
+        .enter-btn {
+            background: transparent;
+            border: 2px solid #ff0044;
+            color: #ffffff;
+            padding: 12px 45px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            display: none;
+            box-shadow: 0 0 15px rgba(255, 0, 68, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .enter-btn:hover {
+            background: #ff0044;
+            color: #000000;
+            box-shadow: 0 0 25px #ff0044, 0 0 10px #ffcc00;
+            border-color: #ffcc00;
+        }
+
+        /* ==========================================================================
+           3. MAIN LAYOUT CONTAINER
+           ========================================================================== */
+        .wrapper {
+            width: 100%;
+            max-width: 600px;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .wrapper.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .header-box {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .main-title {
+            font-size: 3.5rem;
+            color: #ff0044;
+            text-shadow: 0 0 15px #ff0044;
+            font-style: italic;
+            letter-spacing: 2px;
+        }
+
+        .studio-tag {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.75rem;
+            color: #ffcc00;
+            letter-spacing: 6px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .engine-panel {
+            background: rgba(18, 7, 24, 0.8);
+            border: 2px solid #ff0044;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 0 30px rgba(255, 0, 68, 0.2);
+            backdrop-filter: blur(8px);
+        }
+
+        /* SYSTEM INFO TAGS */
+        .sys-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .sys-card {
+            background: rgba(255, 0, 68, 0.05);
+            border: 1px solid rgba(255, 0, 68, 0.2);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .sys-label {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.75rem;
+            color: #8e809c;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 3px;
+        }
+
+        .sys-value {
+            font-size: 1.05rem;
+            color: #ffffff;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .sys-card.highlight .sys-value {
+            color: #ffcc00;
+            text-shadow: 0 0 5px rgba(255, 204, 0, 0.3);
+        }
+
+        /* FILTERS SELECTORS & SEARCH INPUT (MỚI) */
+        .filter-group {
+            margin-bottom: 18px;
+        }
+
+        .filter-group label {
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.8rem;
+            color: #ffcc00;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        select {
+            width: 100%;
+            background: #0d0411;
+            border: 1px solid rgba(255, 0, 68, 0.5);
+            color: #ffffff;
+            padding: 14px;
+            font-size: 0.95rem;
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: bold;
+        }
+
+        /* Ô TÌM KIẾM CHẤT CHƠI */
+        .search-input {
+            width: 100%;
+            background: #0d0411;
+            border: 2px solid #ff0044;
+            color: #ffffff;
+            padding: 14px;
+            font-size: 1rem;
+            border-radius: 6px;
+            outline: none;
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: inset 0 0 10px rgba(255, 0, 68, 0.2);
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: #ffcc00;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.4);
+        }
+
+        .search-input::placeholder {
+            color: #514263;
+            text-transform: none;
+        }
+
+        /* DISPLAY DATA */
+        .sens-container {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .sens-row {
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 0;
+            border-bottom: 1px solid rgba(255, 0, 68, 0.1);
+        }
+
+        .sens-txt-label {
+            font-weight: 600;
+            color: #c9bed6;
+            font-size: 0.9rem;
+        }
+
+        .sens-num {
+            color: #ffcc00;
+            font-weight: 900;
+            font-size: 1.25rem;
+            text-shadow: 0 0 5px rgba(255, 204, 0, 0.4);
+        }
+
+        .dpi-box {
+            border-top: 2px dashed rgba(255, 0, 68, 0.3);
+            margin-top: 5px;
+            padding-top: 12px;
+        }
+
+        .action-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #ff0044 0%, #b30030 100%);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 0, 68, 0.4);
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px #ff0044;
+        }
+
+        .discord-btn {
+            width: 100%;
+            background: #1a1423;
+            border: 1px solid #5865F2;
+            color: #5865F2;
+            padding: 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .discord-btn:hover {
+            background: #5865F2;
+            color: #ffffff;
+            box-shadow: 0 0 15px #5865F2;
+        }
+
+        /* MUSIC STATUS INDICATOR */
+        .music-indicator {
+            position: fixed;
+            bottom: 20px; left: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.6);
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,0,68,0.2);
+            font-size: 0.75rem;
+            color: #ff0044;
+        }
+
+        .bar {
+            width: 3px; height: 12px; background: #ff0044;
+            animation: dance 1s linear infinite alternate;
+        }
+        .bar:nth-child(2) { animation-delay: 0.3s; }
+        .bar:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes dance { 0% { height: 3px; } 100% { height: 15px; } }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.03); opacity: 1; text-shadow: 0 0 30px #ff0044; } 100% { transform: scale(1); opacity: 0.9; } }
+
+        .footer-text {
+            text-align: center;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.7rem;
+            color: #4a3e5c;
+            margin-top: 20px;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-audio" src="lofi-music.mp3" loop></audio>
+
+    <div id="loading-screen">
+        <div class="loader-logo">F SPEED</div>
+        <div style="font-family:'Segoe UI'; font-size:0.8rem; color:#ffcc00; letter-spacing:3px; margin-bottom:15px; font-weight:bold;">TUNING SAMSUNG DATABASE...</div>
+        <div class="loader-bar-bg">
+            <div class="loader-bar-fill" id="progress-fill"></div>
+        </div>
+        <div style="font-family:'Segoe UI'; font-size:0.9rem; color:#625275;" id="load-txt">0%</div>
+        <button class="enter-btn" id="btn-start" onclick="activateEngine()">VÀO WEB</button>
+    </div>
+
+    <div class="wrapper" id="main-ui">
+        <div class="header-box">
+            <div class="main-title">F SPEED</div>
+            <div class="studio-tag">TUNED BY AST STUDIO</div>
+        </div>
+
+        <div class="engine-panel">
+            
+            <div class="sys-info-grid">
+                <div class="sys-card">
+                    <div class="sys-label">Hỗ trợ hãng</div>
+                    <div class="sys-value">SAMSUNG</div>
+                </div>
+                <div class="sys-card highlight">
+                    <div class="sys-label">Hỗ trợ phiên bản</div>
+                    <div class="sys-value">ANDROID 14 - 16</div>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label>📌 CHỌN HỆ ĐIỀU HÀNH (ANDROID VERSION):</label>
+                <select id="select-ui" onchange="matchSamsungSens()">
+                    <option value="oneui_8">Android 16 (Tối ưu hóa phản hồi chạm)</option>
+                    <option value="oneui_7">Android 15 (Ghim tâm tầm trung mượt)</option>
+                    <option value="oneui_6">Android 14 (Hệ thống cơ bản ổn định)</option>
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>🔍 NHẬP DÒNG MÁY SAMSUNG CỦA BẠN:</label>
+                <input type="text" id="search-device" class="search-input" placeholder="Ví dụ: Samsung A15, S24 Ultra, M34..." oninput="matchSamsungSens()">
+            </div>
+
+            <div class="sens-container">
+                <div class="sens-row">
+                    <span class="sens-txt-label">Nhìn Xung Quanh (General)</span>
+                    <span class="sens-num" id="out-general">0</span>
+                </div>
+                <div class="sens-row">
+                    <span class="sens-txt-label">Red Dot Sight</span>
+                    <span class="sens-num" id="out-reddot">0</span>
+                </div>
+                <div class="sens-row">
+                    <span class="sens-txt-label">Ống Ngắm 2x (2x Scope)</span>
+                    <span class="sens-num" id="out-2x">0</span>
+                </div>
+                <div class="sens-row">
+                    <span class="sens-txt-label">Ống Ngắm 4x (4x Scope)</span>
+                    <span class="sens-num" id="out-4x">0</span>
+                </div>
+                <div class="sens-row">
+                    <span class="sens-txt-label">Ống Ngắm AWM (AWM Scope)</span>
+                    <span class="sens-num" id="out-awm">0</span>
+                </div>
+                <div class="sens-row">
+                    <span class="sens-txt-label">Nhìn Tự Do (Free Look)</span>
+                    <span class="sens-num" id="out-look">0</span>
+                </div>
+                <div class="sens-row dpi-box" style="border-bottom:none; padding-bottom:0;">
+                    <span class="sens-txt-label" style="color: #ffcc00; font-weight:bold;">THIẾT LẬP DPI & NÚT BẮN:</span>
+                    <span class="sens-num" id="out-dpi" style="font-size:0.9rem; color:#00ffcc;">Đang phân tích...</span>
+                </div>
+            </div>
+
+            <button class="action-btn" onclick="copyEngineSens()">📋 SAO CHÉP THÔNG SỐ</button>
+
+            <a href="https://discord.gg/aststudio" target="_blank" class="discord-btn">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M13.545 2.907a13.227 13.227 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.218 12.218 0 0 0-3.658 0 8.258 8.258 0 0 0-.412-.833.051.051 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.041.041 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032c.001.014.01.028.021.037a13.276 13.276 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019c.308-.42.582-.863.818-1.329a.05.05 0 0 0-.026-.07 9.094 9.094 0 0 1-1.248-.595.05.05 0 0 1-.005-.085c.085-.063.166-.129.244-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.05.05 0 0 1 .053.007c.078.066.159.132.243.194a.05.05 0 0 1-.006.085 8.2 8.2 0 0 1-1.249.596.05.05 0 0 0-.025.07c.24.466.513.91.819 1.329a.05.05 0 0 0 .056.019 13.23 13.23 0 0 0 4.001-2.02.049.049 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.034.034 0 0 0-.02-.019Zm-8.198 7.307c-.789 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.45.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612Zm5.316 0c-.788 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612Z"/>
+                </svg>
+                JOIN AST STUDIO DISCORD SERVER
+            </a>
+        </div>
+
+        <div class="footer-text">
+            F SPEED ENGINE SYSTEM V6.0 // POWERED BY AST STUDIO.
+        </div>
+    </div>
+
+    <div class="music-indicator" id="music-bar" style="display:none;">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <span>AUDIO LIVE</span>
+    </div>
+
+    <script>
+        // --- 1. ENGINE DATABASE PHÂN LOẠI CHUẨN ĐỂ ENGINE TÌM KIẾM THEO TỪ KHÓA ---
+        const fSpeedDatabase = {
+            "oneui_8": {
+                "ultra": { g: 90, r: 87, x2: 84, x4: 80, a: 35, l: 50, dpi: "Nút: 45% | DPI: 450 (Mượt sâu bản Android 16)" },
+                "s": { g: 94, r: 90, x2: 86, x4: 82, a: 40, l: 55, dpi: "Nút: 47% | DPI: 470" },
+                "z": { g: 88, r: 85, x2: 80, x4: 78, a: 30, l: 45, dpi: "Nút: 50% | DPI: Mặc định" },
+                "a_high": { g: 96, r: 92, x2: 89, x4: 85, a: 40, l: 60, dpi: "Nút: 46% | DPI: 490" },
+                "a_low": { g: 100, r: 96, x2: 92, x4: 88, a: 45, l: 65, dpi: "Nút: 44% | DPI: 510" }
+            },
+            "oneui_7": {
+                "ultra": { g: 92, r: 89, x2: 85, x4: 82, a: 40, l: 50, dpi: "Nút: 46% | DPI: 460" },
+                "s": { g: 95, r: 91, x2: 88, x4: 84, a: 42, l: 58, dpi: "Nút: 48% | DPI: 480" },
+                "z": { g: 90, r: 86, x2: 82, x4: 80, a: 35, l: 50, dpi: "Nút: 49% | DPI: Mặc định" },
+                "a_high": { g: 98, r: 94, x2: 90, x4: 87, a: 45, l: 62, dpi: "Nút: 45% | DPI: 500" },
+                "a_low": { g: 100, r: 98, x2: 95, x4: 90, a: 50, l: 70, dpi: "Nút: 42% | DPI: 530" }
+            },
+            "oneui_6": {
+                "ultra": { g: 95, r: 92, x2: 88, x4: 85, a: 45, l: 60, dpi: "Nút: 48% | DPI: 480" },
+                "s": { g: 98, r: 95, x2: 90, x4: 86, a: 45, l: 60, dpi: "Nút: 47% | DPI: 490" },
+                "z": { g: 92, r: 88, x2: 85, x4: 82, a: 38, l: 55, dpi: "Nút: 50% | DPI: 440" },
+                "a_high": { g: 100, r: 96, x2: 92, x4: 89, a: 45, l: 65, dpi: "Nút: 45% | DPI: 510" },
+                "a_low": { g: 100, r: 100, x2: 98, x4: 94, a: 55, l: 75, dpi: "Nút: 40% | DPI: 560" }
+            }
+        };
+
+        // --- 2. HỆ THỐNG MÀN HÌNH CHỜ CHẠY % ---
+        let progress = 0;
+        const fill = document.getElementById('progress-fill');
+        const txt = document.getElementById('load-txt');
+        const btn = document.getElementById('btn-start');
+
+        const interval = setInterval(() => {
+            progress += Math.floor(Math.random() * 8) + 2;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                document.getElementById('load-txt').style.display = 'none';
+                btn.style.display = 'block'; 
+            }
+            fill.style.width = progress + '%';
+            txt.innerText = progress + '%';
+        }, 50);
+
+        function activateEngine() {
+            const loader = document.getElementById('loading-screen');
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.display = 'none', 500);
+
+            document.getElementById('main-ui').classList.add('active');
+
+            const audio = document.getElementById('bg-audio');
+            audio.play().catch(e => console.log("Fix policy."));
+            document.getElementById('music-bar').style.display = 'flex';
+
+            matchSamsungSens();
+        }
+
+        // --- 4. ENGINE TỰ ĐỘNG PHÂN TÍCH TỪ KHÓA ĐỂ XUẤT ĐỘ NHẠY ---
+        function matchSamsungSens() {
+            const uiVer = document.getElementById('select-ui').value;
+            const searchVal = document.getElementById('search-device').value.toLowerCase().trim();
+
+            let targetGroup = "a_high"; // Nhóm mặc định nếu ô tìm kiếm trống
+
+            if (searchVal !== "") {
+                if (searchVal.includes("ultra") || searchVal.includes("plus") || searchVal.includes(" +")) {
+                    targetGroup = "ultra";
+                } else if (searchVal.includes("s2") || searchVal.includes("s1") || searchVal.includes("s20") || (searchVal.startsWith("s") && !searchVal.includes("s0"))) {
+                    targetGroup = "s";
+                } else if (searchVal.includes("fold") || searchVal.includes("flip") || searchVal.includes("z")) {
+                    targetGroup = "z";
+                } else if (searchVal.includes("a15") || searchVal.includes("a05") || searchVal.includes("a14") || searchVal.includes("a04") || searchVal.includes("m") || searchVal.includes("f")) {
+                    targetGroup = "a_low"; // Các dòng máy cỏ/giá rẻ tự động nhận cấu hình này để kéo mượt nhất
+                } else if (searchVal.includes("a") || searchVal.includes("tab")) {
+                    targetGroup = "a_high";
+                } else {
+                    targetGroup = "a_high"; // Các dòng khác tự động đồng bộ nhóm tầm trung cân bằng
+                }
+            }
+
+            const currentConfig = fSpeedDatabase[uiVer][targetGroup];
+
+            if (currentConfig) {
+                document.getElementById('out-general').innerText = currentConfig.g;
+                document.getElementById('out-reddot').innerText = currentConfig.r;
+                document.getElementById('out-2x').innerText = currentConfig.x2;
+                document.getElementById('out-4x').innerText = currentConfig.x4;
+                document.getElementById('out-awm').innerText = currentConfig.a;
+                document.getElementById('out-look').innerText = currentConfig.l;
+                document.getElementById('out-dpi').innerText = currentConfig.dpi;
+            }
+        }
+
+        // --- 5. HÀM SAO CHÉP THÔNG SỐ 1 CLICK ---
+        function copyEngineSens() {
+            const uiSelect = document.getElementById('select-ui');
+            const uiText = uiSelect.options[uiSelect.selectedIndex].text;
+            const typedDevice = document.getElementById('search-device').value || "Samsung Galaxy Device";
+
+            const rawText = `🚀 F SPEED ENGINE - SAMSUNG REPORT:
+----------------------------------
+System OS: ${uiText}
+Galaxy Device: ${typedDevice.toUpperCase()}
+----------------------------------
+- Nhìn xung quanh: ${document.getElementById('out-general').innerText}
+- Red Dot Sight: ${document.getElementById('out-reddot').innerText}
+- Ống ngắm 2x: ${document.getElementById('out-2x').innerText}
+- Ống ngắm 4x: ${document.getElementById('out-4x').innerText}
+- Ống ngắm AWM: ${document.getElementById('out-awm').innerText}
+- Nhìn tự do: ${document.getElementById('out-look').innerText}
+👉 Cấu hình: ${document.getElementById('out-dpi').innerText}
+----------------------------------
+🔥 POWERED BY AST STUDIO`;
+
+            navigator.clipboard.writeText(rawText).then(() => {
+                alert("Đã trích xuất và sao chép cấu hình F SPEED!");
+            }).catch(err => {
+                alert("Lỗi trích xuất dữ liệu.");
+            });
+        }
+
+        document.addEventListener('contextmenu', event => event.preventDefault());
+    </script>
+</body>
+</html>
+
